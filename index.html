@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor Python per Studenti</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+    #traccia {
+      width: 50%;
+      padding: 20px;
+      background-color: #f0f0f0;
+      overflow-y: auto;
+    }
+    #editor {
+      width: 50%;
+      padding: 20px;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      flex-grow: 1;
+      width: 100%;
+      font-family: monospace;
+      font-size: 16px;
+      resize: none;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="traccia">
+    <h2>Traccia dell'esercizio</h2>
+    <p>Scrivi una funzione <code>somma(n)</code> che restituisca la somma dei numeri da 1 a n.</p>
+    <p>Testa la funzione con <code>print(somma(10))</code>.</p>
+  </div>
+
+  <div id="editor">
+    <h2>Editor Python</h2>
+    <textarea id="code">def somma(n):\n    return sum(range(1, n+1))\n\nprint(somma(10))</textarea>
+    <button onclick="runPython()">Esegui</button>
+    <pre id="output"></pre>
+  </div>
+
+  <!-- Caricamento Skulpt -->
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt-stdlib.js"></script>
+  <script>
+    function outf(text) {
+      document.getElementById("output").textContent += text;
+    }
+
+    function builtinRead(x) {
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
+        throw "File non trovato: '" + x + "'";
+      }
+      return Sk.builtinFiles["files"][x];
+    }
+
+    function runPython() {
+      const code = document.getElementById("code").value;
+      document.getElementById("output").textContent = "";
+
+      Sk.configure({ output: outf, read: builtinRead });
+      Sk.misceval.asyncToPromise(() =>
+        Sk.importMainWithBody("<stdin>", false, code)
+      ).catch(err => {
+        document.getElementById("output").textContent = err.toString();
+      });
+    }
+  </script>
+</body>
+</html>
