@@ -12,9 +12,11 @@
     }
     #traccia {
       width: 50%;
-      padding: 20px;
+      padding: 0;
       background-color: #f0f0f0;
-      overflow-y: auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
     #editor {
       width: 50%;
@@ -30,7 +32,7 @@
       font-size: 16px;
       resize: none;
     }
-    button {
+    input, button {
       margin-top: 10px;
       padding: 10px;
       font-size: 16px;
@@ -41,23 +43,28 @@
       margin-top: 10px;
       white-space: pre-wrap;
     }
+    iframe {
+      flex-grow: 1;
+      border: none;
+    }
   </style>
 </head>
 <body>
   <div id="traccia">
-    <h2>Traccia dell'esercizio</h2>
-    <p>Scrivi una funzione <code>somma(n)</code> che restituisca la somma dei numeri da 1 a n.</p>
-    <p>Testa la funzione con <code>print(somma(10))</code>.</p>
+    <h2 style="padding: 10px;">Traccia dell'esercizio</h2>
+    <iframe src="traccia.pdf" width="100%" height="100%"></iframe>
   </div>
 
   <div id="editor">
     <h2>Editor Python</h2>
     <textarea id="code">def somma(n):\n    return sum(range(1, n+1))\n\nprint(somma(10))</textarea>
+    <input type="text" id="nomeStudente" placeholder="Il tuo nome">
     <button onclick="runPython()">Esegui</button>
+    <button onclick="inviaCodice()">Invia il codice</button>
     <pre id="output"></pre>
   </div>
 
-  <!-- Caricamento Skulpt -->
+  <!-- Skulpt: esecuzione Python nel browser -->
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt-stdlib.js"></script>
   <script>
@@ -82,6 +89,16 @@
       ).catch(err => {
         document.getElementById("output").textContent = err.toString();
       });
+    }
+
+    function inviaCodice() {
+      const nome = document.getElementById("nomeStudente").value.trim();
+      const codice = document.getElementById("code").value;
+      if (!nome) return alert("Inserisci il tuo nome prima di inviare");
+
+      const moduloURL = "https://docs.google.com/forms/d/e/1FAIpQLSd1HyZ3zHiNRrNtQ_3C7xPSFZb7FzEHAENjQOkJSAIMEswB_A/viewform?usp=sharing&ouid=117838916024083726115"; // ← Sostituisci con il tuo link
+      const query = `?usp=pp_url&entry.1234567890=${encodeURIComponent(nome)}&entry.0987654321=${encodeURIComponent(codice)}`;
+      window.open(moduloURL + query, "_blank");
     }
   </script>
 </body>
