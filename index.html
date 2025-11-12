@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Editor Python con Pyodide</title>
+  <title>Editor Python con Brython</title>
   <style>
     body {
       margin: 0;
@@ -43,13 +43,17 @@
       border: none;
     }
   </style>
+  <!-- Monaco Editor loader -->
   <script>
     window.require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
+  <!-- Brython -->
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
 </head>
-<body>
+<body onload="brython()">
   <div id="traccia">
     <h2 style="padding: 10px;">Traccia dell'esercizio</h2>
     <iframe src="traccia.pdf" width="100%" height="100%"></iframe>
@@ -66,10 +70,7 @@
 
   <script>
     let editor;
-    let pyodideReady = false;
-    let pyodidePromise = loadPyodide();
 
-    // Carica Monaco Editor
     require(['vs/editor/editor.main'], function () {
       editor = monaco.editor.create(document.getElementById('monaco'), {
         value: 'def somma(n):\n    return sum(range(1, n+1))\n\nprint(somma(10))',
@@ -79,35 +80,19 @@
       });
     });
 
-    // Carica Pyodide
-    
-
-    async function runPython() {
-      const output = document.getElementById("output");
-      output.textContent = "Caricamento di Pyodide in corso...";
-      try {
-        const pyodide = await pyodidePromise;
-        const code = editor.getValue();
-        const result = await pyodide.runPythonAsync(code);
-        output.textContent = result !== undefined ? result.toString() : '';
-      } catch (err) {
-        output.textContent = err.toString();
-      }
-    }
-
-   
-    async function runPython() {
-      if (!pyodideReady) {
-        document.getElementById("output").textContent = "Pyodide non è ancora pronto...";
-        return;
-      }
+    function runPython() {
       const code = editor.getValue();
-      try {
-        const result = await pyodide.runPythonAsync(code);
-        document.getElementById("output").textContent = result !== undefined ? result.toString() : '';
-      } catch (err) {
-        document.getElementById("output").textContent = err.toString();
-      }
+      const script = document.createElement("script");
+      script.type = "text/python";
+      script.text = `
+from browser import document
+import sys
+output = document["output"]
+output.textContent = ""
+sys.stdout.write = lambda s: output.textContent += s
+` + code;
+      document.body.appendChild(script);
+      brython(); // Rielabora il DOM per eseguire il nuovo script
     }
 
     function inviaCodice() {
@@ -122,4 +107,3 @@
   </script>
 </body>
 </html>
-
