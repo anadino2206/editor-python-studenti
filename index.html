@@ -67,7 +67,7 @@
   <script>
     let editor;
     let pyodideReady = false;
-    let pyodide;
+    let pyodidePromise = loadPyodide();
 
     // Carica Monaco Editor
     require(['vs/editor/editor.main'], function () {
@@ -80,12 +80,22 @@
     });
 
     // Carica Pyodide
-    async function loadPyodideAndPackages() {
-      pyodide = await loadPyodide();
-      pyodideReady = true;
-    }
-    loadPyodideAndPackages();
+    
 
+    async function runPython() {
+      const output = document.getElementById("output");
+      output.textContent = "Caricamento di Pyodide in corso...";
+      try {
+        const pyodide = await pyodidePromise;
+        const code = editor.getValue();
+        const result = await pyodide.runPythonAsync(code);
+        output.textContent = result !== undefined ? result.toString() : '';
+      } catch (err) {
+        output.textContent = err.toString();
+      }
+    }
+
+   
     async function runPython() {
       if (!pyodideReady) {
         document.getElementById("output").textContent = "Pyodide non è ancora pronto...";
@@ -112,3 +122,4 @@
   </script>
 </body>
 </html>
+
