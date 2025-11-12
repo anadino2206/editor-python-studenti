@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Editor Python con Monaco</title>
+  <title>Editor Python con Pyodide</title>
   <style>
     body {
       margin: 0;
@@ -47,6 +47,7 @@
     window.require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 </head>
 <body>
   <div id="traccia">
@@ -63,13 +64,12 @@
     <pre id="output"></pre>
   </div>
 
-  <!-- Skulpt -->
-  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt-stdlib.js"></script>
-
   <script>
     let editor;
+    let pyodideReady = false;
+    let pyodide;
 
+    // Carica Monaco Editor
     require(['vs/editor/editor.main'], function () {
       editor = monaco.editor.create(document.getElementById('monaco'), {
         value: 'def somma(n):\n    return sum(range(1, n+1))\n\nprint(somma(10))',
@@ -79,31 +79,25 @@
       });
     });
 
-    function outf(text) {
-      document.getElementById("output").textContent += text;
+    // Carica Pyodide
+    async function loadPyodideAndPackages() {
+      pyodide = await loadPyodide();
+      pyodideReady = true;
     }
+    loadPyodideAndPackages();
 
-    function builtinRead(x) {
-      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
-        throw "File non trovato: '" + x + "'";
-      }
-      return Sk.builtinFiles["files"][x];
-    }
-
-    function runPython() {
-      if (!editor) {
-        alert("Editor non inizializzato");
+    async function runPython() {
+      if (!pyodideReady) {
+        document.getElementById("output").textContent = "Pyodide non è ancora pronto...";
         return;
       }
       const code = editor.getValue();
-      document.getElementById("output").textContent = "";
-
-      Sk.configure({ output: outf, read: builtinRead });
-      Sk.misceval.asyncToPromise(() =>
-        Sk.importMainWithBody("<stdin>", false, code)
-      ).catch(err => {
+      try {
+        const result = await pyodide.runPythonAsync(code);
+        document.getElementById("output").textContent = result !== undefined ? result.toString() : '';
+      } catch (err) {
         document.getElementById("output").textContent = err.toString();
-      });
+      }
     }
 
     function inviaCodice() {
@@ -118,8 +112,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
