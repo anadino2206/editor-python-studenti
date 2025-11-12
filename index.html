@@ -43,6 +43,10 @@
       border: none;
     }
   </style>
+  <script>
+    window.require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
 </head>
 <body>
   <div id="traccia">
@@ -63,11 +67,6 @@
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/skulpt-stdlib.js"></script>
 
-  <!-- Monaco Editor loader -->
-  <script>
-    window.require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
   <script>
     let editor;
 
@@ -92,6 +91,10 @@
     }
 
     function runPython() {
+      if (!editor) {
+        alert("Editor non inizializzato");
+        return;
+      }
       const code = editor.getValue();
       document.getElementById("output").textContent = "";
 
@@ -115,6 +118,7 @@
   </script>
 </body>
 </html>
+
 
 
 
